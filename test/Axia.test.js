@@ -11,7 +11,7 @@ const resetState = async () => {
   contracts = await useAxiaToken({});
 };
 
-describe("Axia Token", function () {
+describe.only("Axia Token", function () {
   before(async () => {
     accounts = await useAccounts();
     await resetState();
@@ -40,12 +40,6 @@ describe("Axia Token", function () {
 
       expect(await contracts.axiaToken.totalSupply()).to.equal(decimals(2000));
     });
-  });
-
-  describe("Capping", async () => {
-    before(resetState);
-
-    it("stops the owner from infinitely making money", async () => {});
   });
 
   describe("Burning", async () => {
