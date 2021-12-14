@@ -1,15 +1,14 @@
-const AxiaTokenDeploy = require("./AxiaToken.deploy");
+// npx hardhat deploy --network fuji --tags Payroll
+const PayrollDeploy = async ({ getNamedAccounts, deployments }) => {
+  const { deploy } = deployments;
+  const { deployer } = await getNamedAccounts();
 
-const PayrollDeploy = async (contracts = {}) => {
-  contracts = contracts.axiaToken
-    ? contracts
-    : await AxiaTokenDeploy(contracts);
-
-  const Payroll = await ethers.getContractFactory("Payroll");
-  contracts.payroll = await Payroll.deploy(contracts.axiaToken.address);
-  await contracts.payroll.deployed();
-  return contracts;
+  await deploy("Payroll", {
+    from: deployer,
+    args: [process.env.AXIA_TOKEN_ADDRESS],
+    log: true,
+  });
 };
 
 module.exports = PayrollDeploy;
-module.exports.tags = ["PayrollDeploy"];
+module.exports.tags = ["Payroll"];

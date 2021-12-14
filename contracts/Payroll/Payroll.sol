@@ -13,7 +13,7 @@ contract Payroll is AccessControl {
 
   // STATE
   IERC20 axiaToken;
-  mapping(address => uint16) public employeeHourlyRate;
+  mapping(address => uint256) public employeeHourlyRate;
   mapping(address => uint256) public employeeApprovedPay;
   mapping(address => uint256) public employeePendingPay;
 
@@ -28,7 +28,7 @@ contract Payroll is AccessControl {
     _setRoleAdmin(EMPLOYEE, HR_ROLE);
   }
 
-  function addEmployee(address _employee, uint16 _hourlyRate) public onlyRole(HR_ROLE) {
+  function addEmployee(address _employee, uint256 _hourlyRate) public onlyRole(HR_ROLE) {
     employeeHourlyRate[_employee] = _hourlyRate;
     grantRole(EMPLOYEE, _employee);
     emit AddEmployee(_employee);

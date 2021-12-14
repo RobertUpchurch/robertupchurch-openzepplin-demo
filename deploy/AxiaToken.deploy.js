@@ -1,9 +1,14 @@
-const AxiaTokenDeploy = async (contracts = {}) => {
-  const AxiaToken = await ethers.getContractFactory("AxiaToken");
-  contracts.axiaToken = await AxiaToken.deploy();
-  await contracts.axiaToken.deployed();
-  return contracts;
+// npx hardhat deploy --network fuji --tags AxiaToken
+const AxiaTokenDeploy = async ({ getNamedAccounts, deployments }) => {
+  const { deploy } = deployments;
+  const { deployer } = await getNamedAccounts();
+
+  await deploy("AxiaToken", {
+    from: deployer,
+    args: [],
+    log: true,
+  });
 };
 
 module.exports = AxiaTokenDeploy;
-module.exports.tags = ["AxiaTokenDeploy"];
+module.exports.tags = ["AxiaToken"];

@@ -1,13 +1,14 @@
 const { expect } = require("chai");
-const useAccounts = require("../utilities/hooks/useAccounts");
-const AxiaTokenDeploy = require("../deploy/AxiaToken.deploy");
+const decimals = require("./utilities/helpers/decimals");
+const useAccounts = require("./utilities/hooks/useAccounts");
+const useAxiaToken = require("./utilities/contracts/useAxiaToken");
 
 // GLOBALS
 let accounts;
 let contracts;
 
 const resetState = async () => {
-  contracts = await AxiaTokenDeploy();
+  contracts = await useAxiaToken({});
 };
 
 describe("Axia Token", function () {
@@ -16,18 +17,18 @@ describe("Axia Token", function () {
     await resetState();
   });
 
-  it("deploys axia token with 10,000 axia in deployer", async () => {
+  it("deploys axia token with 1000 axia in deployer", async () => {
     expect(contracts.axiaToken.address).to.exist;
     expect(
       await contracts.axiaToken.balanceOf(accounts.deployer.address)
-    ).to.equal(10000);
+    ).to.equal(decimals(1000));
   });
 
   describe("Minting", async () => {
     before(resetState);
 
     it("Allows the owner to mint more token", async () => {
-      expect(await contracts.axiaToken.totalSupply()).to.equal(10000);
+      expect(await contracts.axiaToken.totalSupply()).to.equal(decimals(1000));
 
       await expect(
         contracts.axiaToken
@@ -35,9 +36,9 @@ describe("Axia Token", function () {
           .mint(accounts.alice.address, 1000)
       ).to.be.revertedWith("Ownable: caller is not the owner");
 
-      await contracts.axiaToken.mint(accounts.deployer.address, 10000);
+      await contracts.axiaToken.mint(accounts.deployer.address, decimals(1000));
 
-      expect(await contracts.axiaToken.totalSupply()).to.equal(20000);
+      expect(await contracts.axiaToken.totalSupply()).to.equal(decimals(2000));
     });
   });
 
@@ -48,31 +49,31 @@ describe("Axia Token", function () {
   });
 
   describe("Burning", async () => {
-    before(resetState);
-
-    beforeEach(async () => {
-      await contracts.axiaToken.transfer(accounts.alice.address, 100);
-      expect(
-        await contracts.axiaToken.balanceOf(accounts.alice.address)
-      ).to.equal(100);
+    before(async () => {
+      await resetState();
+      await contracts.axiaToken.transfer(
+        accounts.alice.address,
+        decimals(1000)
+      );
     });
 
     it("lets the user burn their own tokens", async () => {
-      expect(await contracts.axiaToken.totalSupply()).to.equal(10000);
+      expect(await contracts.axiaToken.totalSupply()).to.equal(decimals(1000));
 
       // ALICE BURNS THE MONEY - https://youtu.be/qMkkfuSizc4?t=74
-      await contracts.axiaToken.connect(accounts.alice).burn(100);
+      await contracts.axiaToken.connect(accounts.alice).burn(decimals(100));
 
       // SHOULD BE GONE
       expect(
         await contracts.axiaToken.balanceOf(accounts.alice.address)
-      ).to.equal(0);
-      expect(await contracts.axiaToken.totalSupply()).to.equal(9900);
+      ).to.equal(decimals(900));
+
+      expect(await contracts.axiaToken.totalSupply()).to.equal(decimals(900));
     });
 
     it("rejects owner from burning alices money without permission", async () => {
       await expect(
-        contracts.axiaToken.burnFrom(accounts.alice.address, 100)
+        contracts.axiaToken.burnFrom(accounts.alice.address, decimals(100))
       ).to.be.revertedWith("ERC20: burn amount exceeds allowance");
     });
   });
@@ -91,7 +92,7 @@ describe("Axia Token", function () {
 
     it("Stops trading when the owner pauses", async () => {
       await expect(
-        contracts.axiaToken.transfer(accounts.alice.address, 100)
+        contracts.axiaToken.transfer(accounts.alice.address, decimals(1000))
       ).to.be.revertedWith("Pausable: paused");
     });
 
@@ -100,13 +101,16 @@ describe("Axia Token", function () {
         contracts.axiaToken,
         "Unpaused"
       );
+
       expect(await contracts.axiaToken.paused()).to.equal(false);
+
       await expect(
-        contracts.axiaToken.transfer(accounts.alice.address, 100)
+        contracts.axiaToken.transfer(accounts.alice.address, decimals(1000))
       ).to.emit(contracts.axiaToken, "Transfer");
+
       expect(
         await contracts.axiaToken.balanceOf(accounts.alice.address)
-      ).to.equal(100);
+      ).to.equal(decimals(1000));
     });
   });
 });

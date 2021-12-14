@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract AxiaToken is ERC20, ERC20Burnable, Pausable, Ownable {
     constructor() ERC20("Axia Token", "AXIA") {
-        _mint(msg.sender, 10000);
+        _mint(msg.sender, 1000 * 10 ** decimals());
     }
 
     function pause() public onlyOwner {
